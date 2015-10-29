@@ -1,0 +1,22 @@
+{{#username}}
+Welcome, {{username}}.<br>
+<h5>Add concerts you've recently seen below!</h5>
+<form action="add-concert" method="post">
+    <input type="text" name="bandName" placeholder="Enter a band" />
+    <input type="text" name="concertDate" placeholder="Enter the date of the show" />
+    <input type="text" name="concertVenue" placeholder="Enter the venue" />
+    <button type="submit">Add Show</button>
+</form>
+<form action="logout" method="post">
+    <button type="submit">Logout</button>
+</form>
+{{/username}}
+
+{{^username}}
+<h5>Create an account below!</h5>
+<form action="login" method="post">
+    <input type="text" placeholder="Username" name="username" />
+    <input type="password" placeholder="Password" name="password" />
+    <button type="submit">Create Account</button>
+</form>
+{{/username}}
