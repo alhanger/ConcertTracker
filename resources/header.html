@@ -1,6 +1,7 @@
 {{#username}}
 Welcome, {{username}}.<br>
-<h5>Add concerts you've recently seen below!</h5>
+<h5>You've been to {{concertNum}} concerts.</h5>
+<h5>Add concerts you've recently seen below!</h5><br>
 <form action="add-concert" method="post">
     <input type="text" name="bandName" placeholder="Enter a band" />
     <input type="text" name="concertDate" placeholder="Enter the date of the show" />
@@ -13,10 +14,10 @@ Welcome, {{username}}.<br>
 {{/username}}
 
 {{^username}}
-<h5>Create an account below!</h5>
-<form action="login" method="post">
+<h5>Login / Create Account</h5>
+<form action="create-account" method="post">
     <input type="text" placeholder="Username" name="username" />
     <input type="password" placeholder="Password" name="password" />
-    <button type="submit">Create Account</button>
+    <button type="submit">Login / Create Account</button>
 </form>
 {{/username}}
