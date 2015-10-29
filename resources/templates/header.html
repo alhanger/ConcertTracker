@@ -1,14 +1,6 @@
 {{#user}}
 <h2>Welcome, {{username}}.</h2>
 <h3>You've been to {{concertNum}} concerts.</h3>
-<h3>Add concerts you've recently seen below!</h3>
-<form action="add-concert" method="post">
-    <input type="text" name="bandName" placeholder="Band" /><br>
-    <input type="text" name="concertDate" placeholder="Date" /><br>
-    <input type="text" name="concertVenue" placeholder="Venue" /><br>
-    <input type="text" name="location" placeholder="City, State" /><br>
-    <button type="submit">Add Show</button>
-</form>
 <form action="logout" method="post">
     <button type="submit">Logout</button>
 </form>

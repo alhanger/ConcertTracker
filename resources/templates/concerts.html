@@ -2,9 +2,18 @@
 <body>
 {{> header}}
 
-<h3>Users</h3>
+<h3>Add concerts you've recently seen below!</h3>
+<form action="add-concert" method="post">
+    <input type="text" name="bandName" placeholder="Band" /><br>
+    <input type="text" name="concertDate" placeholder="Date" /><br>
+    <input type="text" name="concertVenue" placeholder="Venue" /><br>
+    <input type="text" name="location" placeholder="City, State" /><br>
+    <button type="submit">Add Show</button>
+</form>
+
+<h3>Your Concerts:</h3>
 {{#concerts}}
-{{username}} - Concerts: {{concertNum}}<br>
+{{band}} - {{date}} - {{venue}} - {{location}}<br>
 {{/concerts}}
 </body>
 </html>

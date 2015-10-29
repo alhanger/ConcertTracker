@@ -26,9 +26,45 @@ public class Main {
                     HashMap m = new HashMap();
                     m.put("concerts", temp);
                     m.put("user", users.get(username));
-                    return new ModelAndView(m, "concerts.html");
+                    return new ModelAndView(m, "users.html");
                 }),
                 new MustacheTemplateEngine()
+        );
+        Spark.get(
+                "/concerts",
+                ((request, response) -> {
+                    Session session = request.session();
+                    String username = session.attribute("username");
+
+                    User temp = users.get(username);
+
+                    HashMap m = new HashMap();
+                    m.put("user", users.get(username));
+                    m.put("concerts", temp.concerts);
+                    return new ModelAndView(m, "concerts.html");
+
+                }),
+                new MustacheTemplateEngine()
+        );
+        Spark.post(
+                "/add-concert",
+                ((request, response) -> {
+                    Session session = request.session();
+                    String username = session.attribute("username");
+
+                    String band = request.queryParams("bandName");
+                    String date = request.queryParams("concertDate");
+                    String venue = request.queryParams("concertVenue");
+                    String location = request.queryParams("location");
+
+                    Concert concert = new Concert(band, date, venue, location);
+                    users.get(username).concerts.add(concert);
+                    users.get(username).concertNum++;
+
+
+                    response.redirect("/concerts");
+                    return "";
+                })
         );
         Spark.post(
                 "/login",
@@ -43,10 +79,10 @@ public class Main {
                     if (users.get(username) == null) {
                         User user = new User(username, password, 0, new ArrayList<Concert>());
                         users.put(username, user);
-                        response.redirect("/");
+                        response.redirect("/concerts");
                     }
                     else if (password.equals(users.get(username).password) && username.equals(users.get(username).username)) {
-                        response.redirect("/");
+                        response.redirect("/concerts");
                     }
                     else {
                         return "There was an error";
