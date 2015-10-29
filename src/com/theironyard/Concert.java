@@ -9,5 +9,12 @@ public class Concert {
     String venue;
     String date;
     String band;
-    ArrayList<Song> songs;
+    String location;
+
+    public Concert(String band, String date, String venue, String location) {
+        this.band = band;
+        this.date = date;
+        this.venue = venue;
+        this.location = location;
+    }
 }
