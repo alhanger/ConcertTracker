@@ -15,13 +15,14 @@
         <option value="OK">OK</option>
         <option value="Meh">Meh</option>
     </select>
-    <button type="submit">Add Show</button>
+    <button type="submit">Add Concert</button>
 </form>
 
 <h3>Your Concerts:</h3>
 {{#concerts}}
-{{band}} - {{date}} - {{venue}} - {{location}} Rating: {{rating}}
-<form action="delete-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Delete Concert</button> </form><br>
+{{band}} - {{date}} - {{venue}} - {{location}} -- Rating: {{rating}}
+<form aciton="edit-concert?id{{id}}" method="get" style="display: inline;"><button type="submit">Edit Concert</button></form>
+<form action="delete-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Delete Concert</button></form><br>
 {{/concerts}}
 </body>
 </html>

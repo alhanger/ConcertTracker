@@ -1,5 +1,28 @@
 <html>
 <body>
+{{> header}}
 
+{{#concert}}
+Band: {{band}}<br>
+Venue: {{venue}}<br>
+Date: {{date}}<br>
+Location: {{location}}<br>
+Rating: {{rating}}
+{{/concert}}
+
+<form action="edit" method="post">
+    <input type="text" name="bandName" placeholder="Edit Band" /><br>
+    <input type="text" name="concertDate" placeholder="Edit Date" /><br>
+    <input type="text" name="concertVenue" placeholder="Edit Venue" /><br>
+    <input type="text" name="location" placeholder="Edit Location" /><br>
+    <select name="rating">
+        <option value="Excellent">Excellent</option>
+        <option value="Great">Great</option>
+        <option value="Good">Good</option>
+        <option value="OK">OK</option>
+        <option value="Meh">Meh</option>
+    </select>
+    <button type="submit">Edit Concert</button>
+</form>
 </body>
 </html>

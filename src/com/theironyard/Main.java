@@ -65,7 +65,6 @@ public class Main {
                     String venue = request.queryParams("concertVenue");
                     String location = request.queryParams("location");
                     String rating = request.queryParams("rating");
-
                     int id = users.get(username).concerts.size();
 
                     Concert concert = new Concert(band, date, venue, location, rating, id);
@@ -94,6 +93,57 @@ public class Main {
                     }
 
                     writeToJson();
+
+                    response.redirect("/concerts");
+                    return "";
+                })
+        );
+        Spark.get(
+                "/edit-concert",
+                ((request, response) -> {
+                    Session session = request.session();
+                    String username = session.attribute("username");
+                    String id = session.attribute("id");
+                    int dateIdNum = Integer.valueOf(id);
+
+                    Concert temp = users.get(username).concerts.get(dateIdNum);
+
+                    HashMap m = new HashMap();
+                    m.put("user", users.get(username));
+                    m.put("concert", temp);
+
+                    return new ModelAndView(m, "edit-concert.html");
+                }),
+                new MustacheTemplateEngine()
+        );
+        Spark.post(
+                "/edit",
+                ((request, response) -> {
+                    Session session = request.session();
+                    String username = session.attribute("username");
+                    String dateId = request.queryParams("id");
+                    int dateIdNum = Integer.valueOf(dateId);
+                    Concert temp = users.get(username).concerts.get(dateIdNum);
+
+                    String band = request.queryParams("bandName");
+                    String date = request.queryParams("concertDate");
+                    String venue = request.queryParams("concertVenue");
+                    String location = request.queryParams("location");
+                    String rating = request.queryParams("rating");
+
+                    if (band.isEmpty() || date.isEmpty() || venue.isEmpty() || location.isEmpty()) {
+                        band = temp.band;
+                        date = temp.date;
+                        venue = temp.venue;
+                        location = temp.location;
+                    }
+                    else {
+                        temp.band = band;
+                        temp.date = date;
+                        temp.venue = venue;
+                        temp.location = location;
+                        temp.rating = rating;
+                    }
 
                     response.redirect("/concerts");
                     return "";
