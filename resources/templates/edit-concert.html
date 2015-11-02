@@ -8,10 +8,8 @@ Venue: {{venue}}<br>
 Date: {{date}}<br>
 Location: {{location}}<br>
 Rating: {{rating}}<br>
-ID: {{id}}
-{{/concert}}
-
 <form action="edit" method="post">
+    <input type="hidden" name="id" value="{{id}}" />
     <input type="text" name="bandName" placeholder="Edit Band" /><br>
     <input type="text" name="concertDate" placeholder="Edit Date" /><br>
     <input type="text" name="concertVenue" placeholder="Edit Venue" /><br>
@@ -23,8 +21,10 @@ ID: {{id}}
         <option value="OK">OK</option>
         <option value="Meh">Meh</option>
     </select>
-    <input type="number" name="id" placeholder="Concert ID"/>
     <button type="submit">Edit Concert</button>
 </form>
+{{/concert}}
+
+
 </body>
 </html>
