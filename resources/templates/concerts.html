@@ -21,7 +21,7 @@
 <h3>Your Concerts:</h3>
 {{#concerts}}
 {{band}} - {{date}} - {{venue}} - {{location}} -- Rating: {{rating}}
-<form aciton="edit-concert?id{{id}}" method="get" style="display: inline;"><button type="submit">Edit Concert</button></form>
+<form action="edit-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Edit Concert</button></form>
 <form action="delete-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Delete Concert</button></form><br>
 {{/concerts}}
 </body>

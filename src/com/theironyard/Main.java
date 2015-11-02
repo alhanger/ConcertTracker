@@ -98,13 +98,13 @@ public class Main {
                     return "";
                 })
         );
-        Spark.get(
+        Spark.post(
                 "/edit-concert",
                 ((request, response) -> {
                     Session session = request.session();
                     String username = session.attribute("username");
-                    String id = session.attribute("id");
-                    int dateIdNum = Integer.valueOf(id);
+                    String dateId = request.queryParams("id");
+                    int dateIdNum = Integer.valueOf(dateId);
 
                     Concert temp = users.get(username).concerts.get(dateIdNum);
 
@@ -121,29 +121,42 @@ public class Main {
                 ((request, response) -> {
                     Session session = request.session();
                     String username = session.attribute("username");
-                    String dateId = request.queryParams("id");
-                    int dateIdNum = Integer.valueOf(dateId);
-                    Concert temp = users.get(username).concerts.get(dateIdNum);
 
-                    String band = request.queryParams("bandName");
-                    String date = request.queryParams("concertDate");
-                    String venue = request.queryParams("concertVenue");
-                    String location = request.queryParams("location");
-                    String rating = request.queryParams("rating");
 
-                    if (band.isEmpty() || date.isEmpty() || venue.isEmpty() || location.isEmpty()) {
-                        band = temp.band;
-                        date = temp.date;
-                        venue = temp.venue;
-                        location = temp.location;
-                    }
-                    else {
+                    try{
+                        String dateId = request.queryParams("id");
+                        int dateIdNum = Integer.valueOf(dateId);
+                        Concert temp = users.get(username).concerts.get(dateIdNum);
+
+
+                        String band = request.queryParams("bandName");
+                        String date = request.queryParams("concertDate");
+                        String venue = request.queryParams("concertVenue");
+                        String location = request.queryParams("location");
+                        String rating = request.queryParams("rating");
+
+                        if (band.isEmpty()) {
+                            band = temp.band;
+                        }
+                        if (date.isEmpty()) {
+                            date = temp.date;
+                        }
+                        if (venue.isEmpty()){
+                            venue = temp.venue;
+                        }
+                        if (location.isEmpty()) {
+                            location = temp.location;
+                        }
+
                         temp.band = band;
                         temp.date = date;
                         temp.venue = venue;
                         temp.location = location;
                         temp.rating = rating;
+                    } catch (Exception e) {
+
                     }
+
 
                     response.redirect("/concerts");
                     return "";
