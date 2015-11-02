@@ -8,12 +8,20 @@
     <input type="text" name="concertDate" placeholder="Date" /><br>
     <input type="text" name="concertVenue" placeholder="Venue" /><br>
     <input type="text" name="location" placeholder="City, State" /><br>
+    <select name="rating">
+        <option value="Excellent">Excellent</option>
+        <option value="Great">Great</option>
+        <option value="Good">Good</option>
+        <option value="OK">OK</option>
+        <option value="Meh">Meh</option>
+    </select>
     <button type="submit">Add Show</button>
 </form>
 
 <h3>Your Concerts:</h3>
 {{#concerts}}
-{{band}} - {{date}} - {{venue}} - {{location}}<br>
+{{band}} - {{date}} - {{venue}} - {{location}} Rating: {{rating}}
+<form action="delete-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Delete Concert</button> </form><br>
 {{/concerts}}
 </body>
 </html>
