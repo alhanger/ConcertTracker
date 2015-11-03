@@ -47,6 +47,36 @@ public class Main {
         return user;
     }
 
+    public static void insertConcert(Connection conn, int userId, String band, String date, String venue, String location, String rating) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO concerts VALUES (NULL, ?, ?, ?, ?, ?, ?)");
+        stmt.setInt(1, userId);
+        stmt.setString(2, band);
+        stmt.setString(3, date);
+        stmt.setString(4, venue);
+        stmt.setString(5, location);
+        stmt.setString(6, rating);
+        stmt.execute();
+    }
+
+    public static Concert selectConcert(Connection conn, int id) throws SQLException {
+        Concert concert = null;
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM concerts INNER JOIN users " +
+                "ON concerts.user_id = users.id " +
+                "WHERE concerts.id = ?");
+        stmt.setInt(1, id);
+        ResultSet results = stmt.executeQuery();
+        if (results.next()) {
+            concert = new Concert();
+            concert.id = results.getInt("user_id");
+            concert.band = results.getString("band");
+            concert.date = results.getString("date");
+            concert.venue = results.getString("venue");
+            concert.location = results.getString("location");
+            concert.rating = results.getString("rating");
+        }
+        return concert;
+    }
+
     public static void main(String[] args) throws SQLException {
 
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
@@ -237,7 +267,7 @@ public class Main {
         users.put("Geoffrey", new User("Geoffrey", "dyer", 35, new ArrayList<Concert>()));
 
         ArrayList<Concert> temp = users.get("Alex").concerts;
-        temp.add(new Concert("Phish", "10/16/10", "North Charleston Colesium", "Charleston, SC", "Excellent", 0));
+        temp.add(new Concert("Phish", "10/16/10", "North Charleston Coliseum", "Charleston, SC", "Excellent", 0));
 
         ArrayList<Concert> temp2 = users.get("Anna").concerts;
         temp2.add(new Concert("Phish", "12/31/15", "American Airlines Arena", "Miami, FL", "Great", 0));
