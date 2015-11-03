@@ -106,6 +106,12 @@ public class Main {
         return concerts;
     }
 
+    public static void deleteConcert(Connection conn, int id) throws SQLException{
+        PreparedStatement stmt = conn.prepareStatement("DELETE FROM concerts WHERE concerts.id = ?");
+        stmt.setInt(1, id);
+        stmt.execute();
+    }
+
     public static void main(String[] args) throws SQLException {
 
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
@@ -173,86 +179,82 @@ public class Main {
                     Session session = request.session();
                     String username = session.attribute("username");
                     String dateId = request.queryParams("id");
-                    int dateIdNum = Integer.valueOf(dateId);
 
                     try {
-                        Concert tempShow = users.get(username).concerts.get(dateIdNum);
-                        users.get(username).concerts.remove(tempShow);
-                        users.get(username).concertNum--;
-                    } catch (Exception e) {
-
-                    }
-
-                    //writeToJson();
-
-                    response.redirect("/concerts");
-                    return "";
-                })
-        );
-        Spark.post(
-                "/edit-concert",
-                ((request, response) -> {
-                    Session session = request.session();
-                    String username = session.attribute("username");
-                    String dateId = request.queryParams("id");
-                    int dateIdNum = Integer.valueOf(dateId);
-
-                    Concert temp = users.get(username).concerts.get(dateIdNum);
-
-                    HashMap m = new HashMap();
-                    m.put("user", users.get(username));
-                    m.put("concert", temp);
-
-                    return new ModelAndView(m, "edit-concert.html");
-                }),
-                new MustacheTemplateEngine()
-        );
-        Spark.post(
-                "/edit",
-                ((request, response) -> {
-                    Session session = request.session();
-                    String username = session.attribute("username");
-
-
-                    try{
-                        String dateId = request.queryParams("id");
                         int dateIdNum = Integer.valueOf(dateId);
-                        Concert temp = users.get(username).concerts.get(dateIdNum);
-
-
-                        String band = request.queryParams("bandName");
-                        String date = request.queryParams("concertDate");
-                        String venue = request.queryParams("concertVenue");
-                        String location = request.queryParams("location");
-                        String rating = request.queryParams("rating");
-
-                        if (band.isEmpty()) {
-                            band = temp.band;
-                        }
-                        if (date.isEmpty()) {
-                            date = temp.date;
-                        }
-                        if (venue.isEmpty()){
-                            venue = temp.venue;
-                        }
-                        if (location.isEmpty()) {
-                            location = temp.location;
-                        }
-
-                        temp.band = band;
-                        temp.date = date;
-                        temp.venue = venue;
-                        temp.location = location;
-                        temp.rating = rating;
+                        deleteConcert(conn, dateIdNum);
                     } catch (Exception e) {
 
                     }
-
 
                     response.redirect("/concerts");
                     return "";
                 })
         );
+//        Spark.post(
+//                "/edit-concert",
+//                ((request, response) -> {
+//                    Session session = request.session();
+//                    String username = session.attribute("username");
+//                    String dateId = request.queryParams("id");
+//                    int dateIdNum = Integer.valueOf(dateId);
+//
+//                    Concert temp = users.get(username).concerts.get(dateIdNum);
+//
+//                    HashMap m = new HashMap();
+//                    m.put("user", users.get(username));
+//                    m.put("concert", temp);
+//
+//                    return new ModelAndView(m, "edit-concert.html");
+//                }),
+//                new MustacheTemplateEngine()
+//        );
+//        Spark.post(
+//                "/edit",
+//                ((request, response) -> {
+//                    Session session = request.session();
+//                    String username = session.attribute("username");
+//
+//
+//                    try{
+//                        String dateId = request.queryParams("id");
+//                        int dateIdNum = Integer.valueOf(dateId);
+//                        Concert temp = users.get(username).concerts.get(dateIdNum);
+//
+//
+//                        String band = request.queryParams("bandName");
+//                        String date = request.queryParams("concertDate");
+//                        String venue = request.queryParams("concertVenue");
+//                        String location = request.queryParams("location");
+//                        String rating = request.queryParams("rating");
+//
+//                        if (band.isEmpty()) {
+//                            band = temp.band;
+//                        }
+//                        if (date.isEmpty()) {
+//                            date = temp.date;
+//                        }
+//                        if (venue.isEmpty()){
+//                            venue = temp.venue;
+//                        }
+//                        if (location.isEmpty()) {
+//                            location = temp.location;
+//                        }
+//
+//                        temp.band = band;
+//                        temp.date = date;
+//                        temp.venue = venue;
+//                        temp.location = location;
+//                        temp.rating = rating;
+//                    } catch (Exception e) {
+//
+//                    }
+//
+//
+//                    response.redirect("/concerts");
+//                    return "";
+//                })
+//        );
         Spark.post(
                 "/login",
                 ((request, response) -> {

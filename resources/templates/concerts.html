@@ -22,7 +22,10 @@
 {{#concerts}}
 {{band}} - {{date}} - {{venue}} - {{location}} -- Rating: {{rating}}
 <form action="edit-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Edit Concert</button></form>
-<form action="delete-concert?id={{id}}" method="post" style="display: inline;"><button type="submit">Delete Concert</button></form><br>
+<form action="delete-concert" method="post" style="display: inline;">
+    <input type="hidden" name="id" value="{{id}}" />
+    <button type="submit">Delete Concert</button>
+</form><br>
 {{/concerts}}
 </body>
 </html>
