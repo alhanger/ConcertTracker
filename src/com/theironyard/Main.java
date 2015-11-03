@@ -1,22 +1,15 @@
 package com.theironyard;
 
-import jodd.json.JsonParser;
-import jodd.json.JsonSerializer;
 import spark.ModelAndView;
 import spark.Session;
 import spark.Spark;
 import spark.template.mustache.MustacheTemplateEngine;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Main {
-    static HashMap<String, User> users = new HashMap<>();
 
     public static void createTables(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
@@ -40,11 +33,27 @@ public class Main {
         ResultSet results = stmt.executeQuery();
         if (results.next()) {
             user = new User();
+            user.id = results.getInt("id");
             user.username = results.getString("username");
             user.password = results.getString("password");
             user.concertNum = results.getInt("concertNum");
         }
         return user;
+    }
+
+    public static ArrayList<User> selectUsersList(Connection conn) throws SQLException {
+        ArrayList<User> users = new ArrayList<>();
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users");
+        ResultSet results = stmt.executeQuery();
+        while (results.next()) {
+            User user = new User();
+            user.id = results.getInt("id");
+            user.username = results.getString("username");
+            user.password = results.getString("password");
+            user.concertNum = results.getInt("concertNum");
+            users.add(user);
+        }
+        return users;
     }
 
     public static void insertConcert(Connection conn, int userId, String band, String date, String venue, String location, String rating) throws SQLException {
@@ -77,13 +86,30 @@ public class Main {
         return concert;
     }
 
+    public static ArrayList<Concert> selectConcertsLists(Connection conn, int userId) throws SQLException {
+        ArrayList<Concert> concerts = new ArrayList<>();
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM concerts " +
+                "INNER JOIN users ON concerts.user_id = users.id " +
+                "WHERE users.id = ?");
+        stmt.setInt(1, userId);
+        ResultSet results = stmt.executeQuery();
+        while (results.next()) {
+            Concert concert = new Concert();
+            concert.band = results.getString("concerts.band");
+            concert.date = results.getString("concerts.date");
+            concert.venue = results.getString("concerts.venue");
+            concert.location = results.getString("concerts.location");
+            concert.rating = results.getString("concerts.rating");
+            concert.id = results.getInt("concerts.id");
+            concerts.add(concert);
+        }
+        return concerts;
+    }
+
     public static void main(String[] args) throws SQLException {
 
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
-
-        //parseUsers();
-
-        addTestUsers(users);
+        createTables(conn);
 
         Spark.get(
                 "/",
@@ -91,11 +117,11 @@ public class Main {
                     Session session = request.session();
                     String username = session.attribute("username");
 
-                    ArrayList<User> temp = new ArrayList(users.values());
+                    ArrayList<User> temp = selectUsersList(conn);
 
                     HashMap m = new HashMap();
                     m.put("concerts", temp);
-                    m.put("user", users.get(username));
+                    m.put("user", selectUser(conn, username));
                     return new ModelAndView(m, "user.html");
                 }),
                 new MustacheTemplateEngine()
@@ -106,11 +132,11 @@ public class Main {
                     Session session = request.session();
                     String username = session.attribute("username");
 
-                    User temp = users.get(username);
+                    User temp = selectUser(conn, username);
 
                     HashMap m = new HashMap();
-                    m.put("user", users.get(username));
-                    m.put("concerts", temp.concerts);
+                    m.put("user", temp);
+                    m.put("concerts", selectConcertsLists(conn, temp.id));
                     return new ModelAndView(m, "concerts.html");
 
                 }),
@@ -122,17 +148,20 @@ public class Main {
                     Session session = request.session();
                     String username = session.attribute("username");
 
+                    User temp = selectUser(conn, username);
+
                     String band = request.queryParams("bandName");
                     String date = request.queryParams("concertDate");
                     String venue = request.queryParams("concertVenue");
                     String location = request.queryParams("location");
                     String rating = request.queryParams("rating");
-                    int id = users.get(username).concerts.size();
+                    int id = temp.id;
 
-                    Concert concert = new Concert(band, date, venue, location, rating, id);
-                    users.get(username).concerts.add(concert);
-                    users.get(username).concertNum++;
-                    //writeToJson();
+                    insertConcert(conn, id, band, date, venue, location, rating);
+
+//                    Concert concert = new Concert(band, date, venue, location, rating, id);
+//                    users.get(username).concerts.add(concert);
+//                    users.get(username).concertNum++;
 
                     response.redirect("/concerts");
                     return "";
@@ -234,18 +263,18 @@ public class Main {
 
                     session.attribute("username", username);
 
-                    if (users.get(username) == null) {
-                        User user = new User(username, password, 0, new ArrayList<Concert>());
-                        users.put(username, user);
+                    User temp = selectUser(conn, username);
+
+                    if (temp == null) {
+                        insertUser(conn, username, password, 0);
                         response.redirect("/concerts");
                     }
-                    else if (password.equals(users.get(username).password) && username.equals(users.get(username).username)) {
+                    else if (password.equals(temp.password) && username.equals(temp.username)) {
                         response.redirect("/concerts");
                     }
                     else {
                         return "There was an error";
                     }
-                    //writeToJson();
 
                     return "";
                 })
@@ -260,64 +289,4 @@ public class Main {
                 })
         );
     }
-
-    static void addTestUsers(HashMap<String, User> users) {
-        users.put("Alex", new User("Alex", "hanger", 45, new ArrayList<Concert>()));
-        users.put("Anna", new User("Anna", "williams", 20, new ArrayList<Concert>()));
-        users.put("Geoffrey", new User("Geoffrey", "dyer", 35, new ArrayList<Concert>()));
-
-        ArrayList<Concert> temp = users.get("Alex").concerts;
-        temp.add(new Concert("Phish", "10/16/10", "North Charleston Coliseum", "Charleston, SC", "Excellent", 0));
-
-        ArrayList<Concert> temp2 = users.get("Anna").concerts;
-        temp2.add(new Concert("Phish", "12/31/15", "American Airlines Arena", "Miami, FL", "Great", 0));
-
-        ArrayList<Concert> temp3 = users.get("Geoffrey").concerts;
-        temp3.add(new Concert("Phish", "08/01/2014", "The Wharf at Orange Beach", "Orange Beach, AL", "Great", 0));
-    }
-
-    //file reader
-//    static String readFile(String fileName) {
-//        File f = new File(fileName);
-//        try {
-//            FileReader fr = new FileReader(f);
-//            int fileSize = (int) f.length();
-//            char[] fileContent = new char[fileSize];
-//            fr.read(fileContent);
-//            return new String(fileContent);
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
-
-    //file writer
-//    static void writeFile(String fileName, String fileContent) {
-//        File f = new File(fileName);
-//        try {
-//            FileWriter fw = new FileWriter(f);
-//            fw.write(fileContent);
-//            fw.close();
-//        } catch (Exception e) {
-//
-//        }
-//    }
-
-    //write file to JSON format
-//    static void writeToJson() {
-//        JsonSerializer serializer = new JsonSerializer();
-//        Users thing = new Users();
-//        thing.users = users;
-//        String output = serializer.include("*").serialize(thing);
-//
-//        writeFile("users.json", output);
-//    }
-
-
-//    static void parseUsers() {
-//        String content = readFile("users.json");
-//        if (content != null) {
-//            JsonParser parser = new JsonParser();
-//            users = parser.parse(content, Users.class).users;
-//        }
-//    }
 }
