@@ -10,6 +10,7 @@ import spark.template.mustache.MustacheTemplateEngine;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +18,40 @@ import java.util.Map;
 public class Main {
     static HashMap<String, User> users = new HashMap<>();
 
-    public static void main(String[] args) {
+    public static void createTables(Connection conn) throws SQLException {
+        Statement stmt = conn.createStatement();
+        stmt.execute("CREATE TABLE IF NOT EXISTS users (id IDENTITY, username VARCHAR, password VARCHAR, concertNum INT)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS concerts " +
+                "(id IDENTITY, user_id INT, band VARCHAR, date VARCHAR, venue VARCHAR, location VARCHAR, rating VARCHAR)");
+    }
+    
+    public static void insertUser(Connection conn, String username, String password, int concertNum) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO users VALUES (NULL, ?, ?, ?)");
+        stmt.setString(1, username);
+        stmt.setString(2, password);
+        stmt.setInt(3, concertNum);
+        stmt.execute();
+    }
 
-        parseUsers();
+    public static User selectUser(Connection conn, String username) throws SQLException {
+        User user = null;
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE username = ?");
+        stmt.setString(1, username);
+        ResultSet results = stmt.executeQuery();
+        if (results.next()) {
+            user = new User();
+            user.username = results.getString("username");
+            user.password = results.getString("password");
+            user.concertNum = results.getInt("concertNum");
+        }
+        return user;
+    }
+
+    public static void main(String[] args) throws SQLException {
+
+        Connection conn = DriverManager.getConnection("jdbc:h2:./main");
+
+        //parseUsers();
 
         addTestUsers(users);
 
@@ -70,7 +102,7 @@ public class Main {
                     Concert concert = new Concert(band, date, venue, location, rating, id);
                     users.get(username).concerts.add(concert);
                     users.get(username).concertNum++;
-                    writeToJson();
+                    //writeToJson();
 
                     response.redirect("/concerts");
                     return "";
@@ -92,7 +124,7 @@ public class Main {
 
                     }
 
-                    writeToJson();
+                    //writeToJson();
 
                     response.redirect("/concerts");
                     return "";
@@ -183,7 +215,7 @@ public class Main {
                     else {
                         return "There was an error";
                     }
-                    writeToJson();
+                    //writeToJson();
 
                     return "";
                 })
@@ -215,47 +247,47 @@ public class Main {
     }
 
     //file reader
-    static String readFile(String fileName) {
-        File f = new File(fileName);
-        try {
-            FileReader fr = new FileReader(f);
-            int fileSize = (int) f.length();
-            char[] fileContent = new char[fileSize];
-            fr.read(fileContent);
-            return new String(fileContent);
-        } catch (Exception e) {
-            return null;
-        }
-    }
+//    static String readFile(String fileName) {
+//        File f = new File(fileName);
+//        try {
+//            FileReader fr = new FileReader(f);
+//            int fileSize = (int) f.length();
+//            char[] fileContent = new char[fileSize];
+//            fr.read(fileContent);
+//            return new String(fileContent);
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     //file writer
-    static void writeFile(String fileName, String fileContent) {
-        File f = new File(fileName);
-        try {
-            FileWriter fw = new FileWriter(f);
-            fw.write(fileContent);
-            fw.close();
-        } catch (Exception e) {
-
-        }
-    }
+//    static void writeFile(String fileName, String fileContent) {
+//        File f = new File(fileName);
+//        try {
+//            FileWriter fw = new FileWriter(f);
+//            fw.write(fileContent);
+//            fw.close();
+//        } catch (Exception e) {
+//
+//        }
+//    }
 
     //write file to JSON format
-    static void writeToJson() {
-        JsonSerializer serializer = new JsonSerializer();
-        Users thing = new Users();
-        thing.users = users;
-        String output = serializer.include("*").serialize(thing);
+//    static void writeToJson() {
+//        JsonSerializer serializer = new JsonSerializer();
+//        Users thing = new Users();
+//        thing.users = users;
+//        String output = serializer.include("*").serialize(thing);
+//
+//        writeFile("users.json", output);
+//    }
 
-        writeFile("users.json", output);
-    }
 
-
-    static void parseUsers() {
-        String content = readFile("users.json");
-        if (content != null) {
-            JsonParser parser = new JsonParser();
-            users = parser.parse(content, Users.class).users;
-        }
-    }
+//    static void parseUsers() {
+//        String content = readFile("users.json");
+//        if (content != null) {
+//            JsonParser parser = new JsonParser();
+//            users = parser.parse(content, Users.class).users;
+//        }
+//    }
 }
