@@ -1,5 +1,6 @@
 package com.theironyard;
 
+import org.h2.command.Prepared;
 import spark.ModelAndView;
 import spark.Session;
 import spark.Spark;
@@ -109,6 +110,17 @@ public class Main {
     public static void deleteConcert(Connection conn, int id) throws SQLException{
         PreparedStatement stmt = conn.prepareStatement("DELETE FROM concerts WHERE concerts.id = ?");
         stmt.setInt(1, id);
+        stmt.execute();
+    }
+
+    public static void editConcert(Connection conn, String band, String date, String venue, String location, String rating, int id) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("UPDATE concerts SET band = ?, date = ?, venue = ?, location = ?, rating = ? WHERE id = ?");
+        stmt.setString(1, band);
+        stmt.setString(2, date);
+        stmt.setString(3, venue);
+        stmt.setString(4, location);
+        stmt.setString(5, rating);
+        stmt.setInt(6, id);
         stmt.execute();
     }
 

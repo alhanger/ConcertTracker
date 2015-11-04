@@ -82,4 +82,26 @@ public class MainTest {
 
         assertTrue(alexConcerts.size() == 1 && annacConcerts.size() == 0);
     }
+
+    @Test
+    public void testEditConcert() throws SQLException {
+        Connection conn = startConnection();
+        Main.insertUser(conn, "Alex", "", 45);
+        Main.insertUser(conn, "Anna", "", 20);
+        Main.insertConcert(conn, 1, "Phish", "10/16/10", "North Charleston Coliseum", "Charleston, SC", "Excellent");
+        Main.insertConcert(conn, 2, "Phish", "10/16/10", "North Charleston Coliseum", "Charleston, SC", "Excellent");
+        Main.insertConcert(conn, 1, "Phish", "12/31/09", "American Airlines Arena", "Miami, FL", "Great");
+
+        Main.editConcert(conn, "WSP", "11/21/13", "Oak Mountain", "Pelham, AL", "Good", 1);
+
+        Concert temp = Main.selectConcert(conn, 1);
+
+        endConnection(conn);
+
+        assertTrue(temp.band.equals("WSP") &&
+                temp.date.equals("11/21/13") &&
+                temp.venue.equals("Oak Mountain") &&
+                temp.location.equals("Pelham, AL") &&
+                temp.rating.equals("Good"));
+    }
 }
