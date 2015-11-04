@@ -18,7 +18,7 @@ public class Main {
         stmt.execute("CREATE TABLE IF NOT EXISTS concerts " +
                 "(id IDENTITY, user_id INT, band VARCHAR, date VARCHAR, venue VARCHAR, location VARCHAR, rating VARCHAR)");
     }
-    
+
     public static void insertUser(Connection conn, String username, String password, int concertNum) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("INSERT INTO users VALUES (NULL, ?, ?, ?)");
         stmt.setString(1, username);
@@ -40,6 +40,13 @@ public class Main {
             user.concertNum = results.getInt("concertNum");
         }
         return user;
+    }
+
+    public static void updateConcertNum(Connection conn,int count, int id) throws SQLException{
+        PreparedStatement stmt = conn.prepareStatement("UPDATE users SET concertNum = ? WHERE id = ?");
+        stmt.setInt(1, count);
+        stmt.setInt(2, id);
+        stmt.execute();
     }
 
     public static ArrayList<User> selectUsersList(Connection conn) throws SQLException {
@@ -107,7 +114,7 @@ public class Main {
         return concerts;
     }
 
-    public static void deleteConcert(Connection conn, int id) throws SQLException{
+    public static void deleteConcert(Connection conn, int id) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("DELETE FROM concerts WHERE concerts.id = ?");
         stmt.setInt(1, id);
         stmt.execute();
@@ -176,6 +183,7 @@ public class Main {
                     int id = temp.id;
 
                     insertConcert(conn, id, band, date, venue, location, rating);
+                    updateConcertNum(conn, temp.concertNum + 1, id);
 
 //                    Concert concert = new Concert(band, date, venue, location, rating, id);
 //                    users.get(username).concerts.add(concert);
@@ -192,9 +200,12 @@ public class Main {
                     String username = session.attribute("username");
                     String dateId = request.queryParams("id");
 
+                    User temp = selectUser(conn, username);
+
                     try {
                         int dateIdNum = Integer.valueOf(dateId);
                         deleteConcert(conn, dateIdNum);
+                        updateConcertNum(conn, temp.concertNum - 1, temp.id);
                     } catch (Exception e) {
 
                     }
@@ -203,70 +214,72 @@ public class Main {
                     return "";
                 })
         );
-//        Spark.post(
-//                "/edit-concert",
-//                ((request, response) -> {
-//                    Session session = request.session();
-//                    String username = session.attribute("username");
-//                    String dateId = request.queryParams("id");
-//                    int dateIdNum = Integer.valueOf(dateId);
-//
-//                    Concert temp = users.get(username).concerts.get(dateIdNum);
-//
-//                    HashMap m = new HashMap();
-//                    m.put("user", users.get(username));
-//                    m.put("concert", temp);
-//
-//                    return new ModelAndView(m, "edit-concert.html");
-//                }),
-//                new MustacheTemplateEngine()
-//        );
-//        Spark.post(
-//                "/edit",
-//                ((request, response) -> {
-//                    Session session = request.session();
-//                    String username = session.attribute("username");
-//
-//
-//                    try{
-//                        String dateId = request.queryParams("id");
-//                        int dateIdNum = Integer.valueOf(dateId);
-//                        Concert temp = users.get(username).concerts.get(dateIdNum);
-//
-//
-//                        String band = request.queryParams("bandName");
-//                        String date = request.queryParams("concertDate");
-//                        String venue = request.queryParams("concertVenue");
-//                        String location = request.queryParams("location");
-//                        String rating = request.queryParams("rating");
-//
-//                        if (band.isEmpty()) {
-//                            band = temp.band;
-//                        }
-//                        if (date.isEmpty()) {
-//                            date = temp.date;
-//                        }
-//                        if (venue.isEmpty()){
-//                            venue = temp.venue;
-//                        }
-//                        if (location.isEmpty()) {
-//                            location = temp.location;
-//                        }
-//
+        Spark.post(
+                "/edit-concert",
+                ((request, response) -> {
+                    Session session = request.session();
+                    String username = session.attribute("username");
+                    String dateId = request.queryParams("id");
+                    int dateIdNum = Integer.valueOf(dateId);
+
+                    Concert temp = selectConcert(conn, dateIdNum);
+
+                    HashMap m = new HashMap();
+                    m.put("user", selectUser(conn, username));
+                    m.put("concert", temp);
+
+                    return new ModelAndView(m, "edit-concert.html");
+                }),
+                new MustacheTemplateEngine()
+        );
+        Spark.post(
+                "/edit",
+                ((request, response) -> {
+                    //Session session = request.session();
+                    //String username = session.attribute("username");
+
+
+                    try {
+                        String dateId = request.queryParams("id");
+                        int dateIdNum = Integer.valueOf(dateId);
+                        Concert temp = selectConcert(conn, dateIdNum);
+
+
+                        String band = request.queryParams("bandName");
+                        String date = request.queryParams("concertDate");
+                        String venue = request.queryParams("concertVenue");
+                        String location = request.queryParams("location");
+                        String rating = request.queryParams("rating");
+
+                        if (band.isEmpty()) {
+                            band = temp.band;
+                        }
+                        if (date.isEmpty()) {
+                            date = temp.date;
+                        }
+                        if (venue.isEmpty()) {
+                            venue = temp.venue;
+                        }
+                        if (location.isEmpty()) {
+                            location = temp.location;
+                        }
+
+                        editConcert(conn, band, date, venue, location, rating, dateIdNum);
+
 //                        temp.band = band;
 //                        temp.date = date;
 //                        temp.venue = venue;
 //                        temp.location = location;
 //                        temp.rating = rating;
-//                    } catch (Exception e) {
-//
-//                    }
-//
-//
-//                    response.redirect("/concerts");
-//                    return "";
-//                })
-//        );
+                    } catch (Exception e) {
+
+                    }
+
+
+                    response.redirect("/concerts");
+                    return "";
+                })
+        );
         Spark.post(
                 "/login",
                 ((request, response) -> {
@@ -282,11 +295,9 @@ public class Main {
                     if (temp == null) {
                         insertUser(conn, username, password, 0);
                         response.redirect("/concerts");
-                    }
-                    else if (password.equals(temp.password) && username.equals(temp.username)) {
+                    } else if (password.equals(temp.password) && username.equals(temp.username)) {
                         response.redirect("/concerts");
-                    }
-                    else {
+                    } else {
                         return "There was an error";
                     }
 
